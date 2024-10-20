@@ -6,7 +6,9 @@ const handleReadRequest = async (req, res) => {
     try {
       const { status, sortBy } = req.query;
       const userId = req.user._id;
-      let query = { createdBy: userId };
+      const isAdmin = req.user.isAdmin;
+
+      let query = isAdmin ? {} : { createdBy: userId };
 
       if (status) {
         query.status = status;
@@ -34,19 +36,30 @@ const handleReadRequest = async (req, res) => {
   };
 
   const handleReadRequestById = async (req, res) => {
-
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-        return res.status(400).json({ message: 'Invalid Note ID format' });
+      return res.status(400).json({ message: 'Invalid Note ID format' });
     }
-    
+  
     try {
-        const note = await Note.findOne({ note_id: new mongoose.Types.ObjectId(req.params.id) });
-        if (!note) return res.status(404).json({ message: 'Note not found' });
-        res.json(note);
+      const isAdmin = req.user.isAdmin;
+      const userId = req.user._id;
+  
+      const query = isAdmin
+        ? { _id: req.params.id }
+        : { _id: req.params.id, createdBy: userId };  
+  
+      const note = await Note.findOne(query);
+  
+      if (!note) {
+        return res.status(404).json({ message: 'Note not found' });
+      }
+  
+      res.json(note);
     } catch (err) {
-        res.status(500).json({ message: err.message });
+      res.status(500).json({ message: err.message });
     }
-};
+  };
+  
 
   
 const handleAddRequest = async (req, res) => {
@@ -67,9 +80,14 @@ const handleAddRequest = async (req, res) => {
   
 const handleDeleteRequest = async (req, res) => {
   try {
-    const userId = req.user._id; 
+    const isAdmin = req.user.isAdmin;
+    const userId = req.user._id;
 
-    const note = await Note.findOne({ _id: req.params.id, createdBy: userId });
+    const query = isAdmin
+      ? { _id: req.params.id } 
+      : { _id: req.params.id, createdBy: userId };  
+
+    const note = await Note.findOne(query);
 
     if (!note) {
       return res.status(404).json({ message: 'Note not found or you do not have permission to delete it' });
@@ -82,12 +100,18 @@ const handleDeleteRequest = async (req, res) => {
   }
 };
 
+
   
 const handleUpdateRequest = async (req, res) => {
   try {
-    const userId = req.user._id; 
+    const isAdmin = req.user.isAdmin;
+    const userId = req.user._id;
 
-    const note = await Note.findOne({ _id: req.params.id, createdBy: userId });
+    const query = isAdmin
+      ? { _id: req.params.id }  
+      : { _id: req.params.id, createdBy: userId }; 
+
+    const note = await Note.findOne(query);
 
     if (!note) {
       return res.status(404).json({ message: 'Note not found or you do not have permission to update it' });
@@ -101,6 +125,7 @@ const handleUpdateRequest = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
 
 
 
