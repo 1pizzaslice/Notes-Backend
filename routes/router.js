@@ -3,15 +3,15 @@ const { handleAddRequest, handleReadRequest, handleReadRequestById, handleUpdate
 const router = express.Router();
 
 
-router.get('/GET/notes' , handleReadRequest);
+router.get('/notes' , handleReadRequest);
 
-router.get('/GET/notes/:id' , handleReadRequestById);
+router.get('/notes/:id' , handleReadRequestById);
 
-router.post('/POST/notes' ,handleAddRequest );
+router.post('/notes' ,handleAddRequest );
 
-router.put('/PUT/notes/:id' ,handleUpdateRequest );
+router.put('/notes/:id' ,handleUpdateRequest );
 
-router.delete('/DELETE/notes/:id' ,handleDeleteRequest );
+router.delete('/notes/:id' ,handleDeleteRequest );
 
 module.exports = router;
 

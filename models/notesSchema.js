@@ -22,6 +22,10 @@ const noteSchema = new mongoose.Schema({
         type: Date,
         default: Date.now                             
     },
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'users',
+    },
 });
 
 // Pre-save middleware to update 'updated_at' on every update

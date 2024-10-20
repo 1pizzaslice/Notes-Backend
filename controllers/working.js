@@ -5,7 +5,8 @@ const mongoose = require('mongoose');
 const handleReadRequest = async (req, res) => {
     try {
       const { status, sortBy } = req.query;
-      let query = {};
+      const userId = req.user.id;
+      let query = { createdBy: userId };
 
       if (status) {
         query.status = status;
@@ -58,31 +59,43 @@ const handleReadRequest = async (req, res) => {
     }
 };
   
-  const handleDeleteRequest = async (req, res) => {
-    try {
-        const note = await Note.findOne({ note_id: new mongoose.Types.ObjectId(req.params.id) });
-        if (!note) return res.status(404).json({ message: 'Note not found' });
+const handleDeleteRequest = async (req, res) => {
+  try {
+    const userId = req.user.id; 
 
-        await note.deleteOne();
-        res.json({ message: 'Note deleted successfully' });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
+    const note = await Note.findOne({ _id: req.params.id, createdBy: userId });
+
+    if (!note) {
+      return res.status(404).json({ message: 'Note not found or you do not have permission to delete it' });
     }
+
+    await note.deleteOne();
+    res.json({ message: 'Note deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
+
   
-  const handleUpdateRequest = async (req, res) => {
-    try {
-        const note = await Note.findOne({ note_id: new mongoose.Types.ObjectId(req.params.id) });
+const handleUpdateRequest = async (req, res) => {
+  try {
+    const userId = req.user.id; 
 
-        if (!note) return res.status(404).json({ message: 'Note not found' });
+    const note = await Note.findOne({ _id: req.params.id, createdBy: userId });
 
-        Object.assign(note, req.body);                // merge request body with the existing note data
-        const updatedNote = await note.save();
-        res.json(updatedNote);
-    } catch (err) {
-        res.status(400).json({ message: err.message });
+    if (!note) {
+      return res.status(404).json({ message: 'Note not found or you do not have permission to update it' });
     }
+
+    Object.assign(note, req.body);
+
+    const updatedNote = await note.save();
+    res.json(updatedNote);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 };
+
 
 
 
