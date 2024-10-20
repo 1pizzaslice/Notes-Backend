@@ -8,7 +8,7 @@ const noteSchema = new mongoose.Schema({
     title: {
         type: String,
         required: true,                            
-        trim: true                                  // removes leading/trailing spaces
+        trim: true                                  
     },
     description: {
         type: String,

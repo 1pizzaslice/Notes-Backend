@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const handleReadRequest = async (req, res) => {
     try {
       const { status, sortBy } = req.query;
-      const userId = req.user.id;
+      const userId = req.user._id;
       let query = { createdBy: userId };
 
       if (status) {
@@ -49,19 +49,25 @@ const handleReadRequest = async (req, res) => {
 };
 
   
-  const handleAddRequest = async (req, res) => {
-    try {
-        const note = new Note(req.body);
-        const savedNote = await note.save();
-        res.status(201).json(savedNote);
-    } catch (err) {
-        res.status(400).json({ message: err.message });
-    }
+const handleAddRequest = async (req, res) => {
+  try {
+    const userId = req.user._id; 
+
+    const note = new Note({
+      ...req.body,            
+      createdBy: userId       
+    });
+
+    const savedNote = await note.save();
+    res.status(201).json(savedNote);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 };
   
 const handleDeleteRequest = async (req, res) => {
   try {
-    const userId = req.user.id; 
+    const userId = req.user._id; 
 
     const note = await Note.findOne({ _id: req.params.id, createdBy: userId });
 
@@ -79,7 +85,7 @@ const handleDeleteRequest = async (req, res) => {
   
 const handleUpdateRequest = async (req, res) => {
   try {
-    const userId = req.user.id; 
+    const userId = req.user._id; 
 
     const note = await Note.findOne({ _id: req.params.id, createdBy: userId });
 
