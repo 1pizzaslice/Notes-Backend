@@ -24,20 +24,35 @@ const handleReadRequest = async (req, res) => {
           const sortOptions = { [sortBy]: 1 };  
           notesQuery = notesQuery.sort(sortOptions);  
         } else {
-          return res.status(400).json({ message: "Invalid sort field" });
+          return res.status(400).json({
+            success: false,
+            message: "Invalid sort field",
+         });
+        
         }
       }
   
       const results = await notesQuery.exec();  
-      res.json(results);
+      res.json({
+        success: true,
+        data: results, // Your retrieved data here
+     });
     } catch (err) {
-      res.status(500).json({ message: err.message });
+      res.status(500).json({
+        success: false,
+        message: err.message || "Internal Server Error",
+     });
+    
     }
   };
 
   const handleReadRequestById = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: 'Invalid Note ID format' });
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid Note ID format',
+    });
+    
     }
   
     try {
@@ -51,12 +66,24 @@ const handleReadRequest = async (req, res) => {
       const note = await Note.findOne(query);
   
       if (!note) {
-        return res.status(404).json({ message: 'Note not found' });
+        return res.status(404).json({
+          success: false,
+          message: 'Note not found',
+        });
+      
       }
   
-      res.json(note);
+      res.json({
+        success: true,
+        data: note, // Your retrieved note data here
+     });
+    
     } catch (err) {
-      res.status(500).json({ message: err.message });
+      res.status(500).json({
+        success: false,
+        message: err.message || "Internal Server Error",
+     });
+    
     }
   };
   
@@ -72,9 +99,16 @@ const handleAddRequest = async (req, res) => {
     });
 
     const savedNote = await note.save();
-    res.status(201).json(savedNote);
+    res.status(201).json({
+      success: true,
+      data: savedNote, // Your saved note data here
+   });
+  
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({
+      success: false,
+      message: err.message || "Bad Request",
+    });
   }
 };
   
@@ -90,14 +124,24 @@ const handleDeleteRequest = async (req, res) => {
     const note = await Note.findOne(query);
 
     if (!note) {
-      return res.status(404).json({ message: 'Note not found or you do not have permission to delete it' });
+      return res.status(404).json({
+        success: false,
+        message: 'Note not found or you do not have permission to delete it',
+     });
     }
 
     await note.deleteOne();
-    res.json({ message: 'Note deleted successfully' });
+    res.json({
+      success: true,
+      message: 'Note deleted successfully',
+   });
+  
   } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+    res.status(500).json({
+      success: false,
+      message: err.message || "Internal Server Error",
+   });
+    }
 };
 
 
@@ -114,15 +158,27 @@ const handleUpdateRequest = async (req, res) => {
     const note = await Note.findOne(query);
 
     if (!note) {
-      return res.status(404).json({ message: 'Note not found or you do not have permission to update it' });
-    }
+      return res.status(404).json({
+        success: false,
+        message: 'Note not found or you do not have permission to update it',
+     });
+        }
 
     Object.assign(note, req.body);
 
     const updatedNote = await note.save();
-    res.json(updatedNote);
+    res.json({
+      success: true,
+      message: 'Note updated successfully',
+      data: updatedNote, // Include the updated note data
+    });
+  
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({
+      success: false,
+      message: err.message || "Bad Request", 
+  });
+  
   }
 };
 

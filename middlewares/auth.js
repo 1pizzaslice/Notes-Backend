@@ -3,10 +3,21 @@ const { getUser } = require("../service/auth");
 async function restrictToLoggedinUserOnly(req, res, next) {
   const userUid = req.cookies?.uid;
 
-  if (!userUid) return res.json({ message: "User not logged in" });
+  if (!userUid) {
+    return res.status(401).json({
+        success: false,
+        message: "User not logged in",
+    });
+}
+
   const user = getUser(userUid);
 
-  if (!user) return res.status(401).json({ message: "Unauthorized" });
+  if (!user) {
+    return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+    });
+}
 
   req.user = user;
   next();
