@@ -4,14 +4,24 @@ const express = require('express');      // requiring express and creating an in
 const app = express();
 const cookieParser = require("cookie-parser");
 const { restrictToLoggedinUserOnly, checkAuth } = require("./middlewares/auth");
-
+const cors = require('cors'); 
 const { connectToMongoDB } = require('./connect');      //connecting to the database
 
 connectToMongoDB(process.env.MONGO_URL)    // process.env.MONGO_URL
     .then(() => console.log('Connected to MongoDB'))
     .catch((err) => console.error(err));
 
-
+    app.use(cors({
+        origin: function (origin, callback) {
+            // Allow requests with no 'origin' (like server-to-server or Postman)
+            if (!origin || origin) {
+                callback(null, origin); // Allow all origins
+            } else {
+                callback(new Error('CORS error: Origin not allowed'));
+            }
+        },
+        credentials: true, // Enable credentials (cookies, authorization headers, etc.)
+    }));
 
 const urlRoute = require('./routes/router');        
 const userRoute = require('./routes/user');        
