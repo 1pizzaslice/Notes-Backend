@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");
 const { restrictToLoggedinUserOnly, checkAuth } = require("./middlewares/auth");
 const cors = require('cors'); 
 const { connectToMongoDB } = require('./connect');      //connecting to the database
+const uploadRoute = require('./routes/upload'); 
 
 connectToMongoDB(process.env.MONGO_URL)    // process.env.MONGO_URL
     .then(() => console.log('Connected to MongoDB'))
@@ -13,14 +14,14 @@ connectToMongoDB(process.env.MONGO_URL)    // process.env.MONGO_URL
 
     app.use(cors({
         origin: function (origin, callback) {
-            // Allow requests with no 'origin' (like server-to-server or Postman)
+            
             if (!origin || origin) {
-                callback(null, origin); // Allow all origins
+                callback(null, origin); // allow all origins
             } else {
                 callback(new Error('CORS error: Origin not allowed'));
             }
         },
-        credentials: true, // Enable credentials (cookies, authorization headers, etc.)
+        credentials: true, 
     }));
 
 const urlRoute = require('./routes/router');        
@@ -34,9 +35,11 @@ const PORT = process.env.PORT || 5050 ;
 app.use(express.urlencoded({ extended: true }));  
 app.use(express.json()); 
 app.use(cookieParser()); 
+app.use('/uploads', express.static('uploads'));  // serve the uploads folder
 
 app.use('/user', userRoute);
 app.use('/', restrictToLoggedinUserOnly ,urlRoute);
+app.use('/uploads', uploadRoute); 
 
 
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
